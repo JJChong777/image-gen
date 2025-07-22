@@ -1,5 +1,5 @@
 import streamlit as st
-from modules import display_img_with_download_thumbnail
+from client_streamlit.modules import display_img_with_download_thumbnail
 
 def search_images(query):
     # Simulated search result

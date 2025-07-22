@@ -1,0 +1,7 @@
+# client_streamlit dependencies
+streamlit
+
+# server_api dependencies
+pillow
+torch
+diffusers
