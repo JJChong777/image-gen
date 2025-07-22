@@ -19,6 +19,11 @@ pipe = pipe.to("cuda")
 
 app = FastAPI()
 
+# Health Check 
+@app.get("/")
+def root():
+    return {"message": "ok"}
+
 # Save the last user input (in-memory for simplicity)
 last_input = ""
 

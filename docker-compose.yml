@@ -1,0 +1,30 @@
+services:
+  fast-api:
+    build:
+      context: .
+      dockerfile: dockerfile.fastapi
+    container_name: fast-api
+    image: gen_design_backend
+    ports:
+      - "8000:8000"
+    env_file: "dev.env"
+    volumes:
+      - ./server_api:/app
+  streamlit:
+    build:
+      context: .
+      dockerfile: dockerfile.streamlit
+    container_name: streamlit-app
+    image: gen_design_frontend
+    ports:
+      - "8501:8501"
+    env_file: "dev.env"
+    environment:
+      - STREAMLIT_SERVER_RUN_ON_SAVE=true
+      - STREAMLIT_SERVER_MAX_UPLOAD_SIZE=5
+      - PYTHONUNBUFFERED=1
+      - API_URL=http://fast-api:8000
+    volumes:
+      - ./client_streamlit:/app
+    depends_on:
+      - fast-api

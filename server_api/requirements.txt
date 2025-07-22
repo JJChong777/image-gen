@@ -1,0 +1,5 @@
+# server_api dependencies
+fastapi
+pillow
+torch
+diffusers
