@@ -30,6 +30,8 @@ def fetch_image_from_url(name, url):
         image_data = BytesIO(response.content)
         return image_data
 
+# def safe_call_api(req_type, url, payload=None):
+
 
 def display_img_with_download(name, url):
     image_data = fetch_image_from_url(name, url)

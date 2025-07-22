@@ -1,7 +1,10 @@
 import streamlit as st
 from modules import display_img_with_download, generate_file_name
+API_URL = "http://fast-api:8000"
 
 def generate_image(prompt):
+    url = f"{API_URL}/input"
+    payload = {'user_input': f'{prompt}'}
     return "https://upload.wikimedia.org/wikipedia/commons/1/1a/YF-16_and_YF-17_in_flight.jpg"
 
 def main():
@@ -58,7 +61,8 @@ def main():
         with st.chat_message("user"):
             st.markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
-        image_url = generate_image(prompt)
+        with st.spinner():
+            image_url = generate_image(prompt)
         if image_url:
             name = generate_file_name()
             with st.chat_message("assistant"):
