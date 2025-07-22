@@ -1,5 +1,5 @@
 import streamlit as st
-from client_streamlit.modules import display_img_with_download, generate_file_name
+from modules import display_img_with_download, generate_file_name
 
 def generate_image(prompt):
     return "https://upload.wikimedia.org/wikipedia/commons/1/1a/YF-16_and_YF-17_in_flight.jpg"
@@ -11,7 +11,9 @@ def main():
     if "messages" not in st.session_state:
         st.session_state.messages = [{"role": "assistant", "content": "Hi, I'm the Image Generation Chatbot! Type in a prompt to get started", "ok":True, "image": None}]
 
-    prompt = st.chat_input("Type your image generation prompt here...")
+    prompt = st.chat_input(placeholder="Type your image generation prompt here...",
+        accept_file=True,
+        file_type=["jpg", "jpeg", "png"],)
 
     suggested_questions = [
         "Generate an image of a F16 plane in the clear blue sky flying over mountains"
@@ -62,12 +64,6 @@ def main():
             with st.chat_message("assistant"):
                 display_img_with_download(name, image_url)
             st.session_state.messages.append({"role": "assistant", "content": None, "ok": True, "image": {"name": name, "url": image_url}})
-
- 
-
-
-
-
 
 if __name__ == "__main__":
     main()

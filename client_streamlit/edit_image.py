@@ -1,5 +1,5 @@
 import streamlit as st
-from client_streamlit.modules import display_img_with_download, generate_file_name
+from modules import display_img_with_download, generate_file_name
 
 def image_edit_with_prompt(image_file, prompt):
     """Generate a edited image with the original image file and a prompt"""
