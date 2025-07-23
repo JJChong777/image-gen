@@ -5,6 +5,7 @@ API_URL = "http://fast-api:8000"
 def generate_image(prompt):
     url = f"{API_URL}/input"
     payload = {'user_input': f'{prompt}'}
+    
     return "https://upload.wikimedia.org/wikipedia/commons/1/1a/YF-16_and_YF-17_in_flight.jpg"
 
 def main():

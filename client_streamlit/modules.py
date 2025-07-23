@@ -7,6 +7,7 @@ import pytz
 import random
 import string
 
+from enum import Enum
 
 
 def fetch_image_from_url(name, url):
@@ -76,3 +77,38 @@ def display_img_with_download_thumbnail(name, url):
                     key=f"download_{name}",
                     on_click="ignore"
                 )
+
+
+
+
+
+
+
+
+class RequestType(str, Enum):
+    GET = "GET"
+    POST = "POST"
+
+
+def safe_call_api(req_type: RequestType, url: str, payload: dict = None):
+    try:
+        if req_type == RequestType.GET:
+            response = requests.get(url, params=payload)
+        elif req_type == RequestType.POST:
+            response = requests.post(url, data=payload)
+
+        response.raise_for_status()
+
+        try:
+            return response.json()
+        except ValueError:
+            return {"error": "Response is not valid JSON", "raw": response.text}
+
+    except requests.exceptions.HTTPError as http_err:
+        return {"error": f"HTTP error occurred: {http_err}"}
+    except requests.exceptions.ConnectionError:
+        return {"error": "Connection error. Is the server running?"}
+    except requests.exceptions.Timeout:
+        return {"error": "Timeout error."}
+    except requests.exceptions.RequestException as err:
+        return {"error": f"Unexpected error: {err}"}

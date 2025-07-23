@@ -9,3 +9,4 @@ flash-attn>=2.6.3
 sageattention>=2.1.1
 xformers>=0.0.29
 accelerate
+wheel
