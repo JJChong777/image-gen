@@ -84,26 +84,23 @@ def main():
         st.session_state.messages.append({"role": "user", "content": last_prompt})
         with st.chat_message("assistant"):
             with st.spinner("Sending prompt to server..."):
-                time.sleep(5) # uncomment if testing spinner or delay
+                # time.sleep(2) # uncomment if testing spinner or delay
                 success, prompt_response = send_prompt(last_prompt)
                 if success:
                     message = prompt_response.json().get("message")
                     st.success(message)
                 else:
-                    st.error(prompt_response)
                     st.session_state.messages.append({"role": "assistant", "content": prompt_response, "ok": False})
                     return
             with st.spinner("Fetching image from server..."):
-                time.sleep(5) # uncomment if testing spinner or delay
+                # time.sleep(2) # uncomment if testing spinner or delay
                 success, img_response = fetch_image()
                 if not success: 
-                    st.error(img_response)
                     st.session_state.messages.append({"role": "assistant", "content": img_response, "ok": False})
                     return
                 img_name = generate_file_name()
                 img_bytes = img_response.content
                 st.session_state.image_cache[img_name] = img_bytes
-                display_img_with_download(img_bytes, img_name)
                 st.session_state.messages.append({"role": "assistant", "content": None, "ok": True, "img_name": img_name})
                 st.session_state.chat_disabled = False
                 st.session_state.last_prompt = None
