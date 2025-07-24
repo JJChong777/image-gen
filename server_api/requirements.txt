@@ -1,8 +1,8 @@
 # server_api dependencies
 fastapi[standard]
 pillow
---extra-index-url https://download.pytorch.org/whl/nightly/cu129
 torch
+--extra-index-url https://download.pytorch.org/whl/nightly/cu129
 diffusers
 transformers
 flash-attn>=2.6.3

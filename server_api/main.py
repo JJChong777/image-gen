@@ -8,13 +8,13 @@ import time
 
 start_time = time.time()
 
-gen_pipe = StableDiffusion3Pipeline.from_pretrained("stabilityai/stable-diffusion-3.5-medium", 
-                                                torch_dtype=torch.bfloat16, 
-                                                text_encoder_3=None, #Drop T5 text encoder to decrease memory requirements
-                                                tokenizer_3=None, #Drop T5 text encoder to decrease memory requirements
-                                                # token=
-                                                )
-gen_pipe = gen_pipe.to("cuda")
+# gen_pipe = StableDiffusion3Pipeline.from_pretrained("stabilityai/stable-diffusion-3.5-medium", 
+#                                                 torch_dtype=torch.bfloat16, 
+#                                                 text_encoder_3=None, #Drop T5 text encoder to decrease memory requirements
+#                                                 tokenizer_3=None, #Drop T5 text encoder to decrease memory requirements
+#                                                 use_auth_token=True
+#                                                 )
+# gen_pipe = gen_pipe.to("cuda")
 
 app = FastAPI()
 
@@ -32,13 +32,14 @@ def receive_input(user_input: str = Form(...)):
     last_input = user_input
     return {"message": f"Input received: {user_input}"}
 
+# return dummy image first for testing
 @app.get("/image") # http://127.0.0.1:8000/image
 def get_image():
-    image = gen_pipe(
-        prompt=last_input,
-        num_inference_steps=28,
-        guidance_scale=3.5,
-    ).images[0]
+    # image = gen_pipe(
+    #     prompt=last_input,
+    #     num_inference_steps=28,
+    #     guidance_scale=3.5,
+    # ).images[0]
 
     image_path = f"{last_input}.png"
     image.save(image_path)
