@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Form
 from fastapi.responses import FileResponse
-from PIL import Image, ImageDraw, ImageFont
+# from PIL import Image, ImageDraw, ImageFont
 import os
-import torch
-from diffusers import StableDiffusion3Pipeline
+# import torch
+# from diffusers import StableDiffusion3Pipeline
 import time
 
 start_time = time.time()
@@ -32,15 +32,23 @@ def receive_input(user_input: str = Form(...)):
     last_input = user_input
     return {"message": f"Input received: {user_input}"}
 
-# return dummy image first for testing
+
+
 @app.get("/image") # http://127.0.0.1:8000/image
 def get_image():
+    image_path = "static/cathat.jpg"
+    return FileResponse(image_path, media_type="image/jpeg")
+
+
+# comment this out first 
+# @app.get("/image") # http://127.0.0.1:8000/image
+# def get_image():
     # image = gen_pipe(
     #     prompt=last_input,
     #     num_inference_steps=28,
     #     guidance_scale=3.5,
     # ).images[0]
 
-    image_path = f"{last_input}.png"
-    image.save(image_path)
-    return FileResponse(image_path, media_type="image/png")
+    # image_path = f"{last_input}.png"
+    # image.save(image_path)
+    # return FileResponse(image_path, media_type="image/png")

@@ -6,45 +6,44 @@ from datetime import datetime
 import pytz
 import random
 import string
-
 from enum import Enum
 
+API_URL = "http://fast-api:8000"
 
-def fetch_image_from_url(name, url):
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"}
+class RequestType(str, Enum):
+    GET = "GET"
+    POST = "POST"
+
+def make_safe_request(req_type: RequestType, url: str, payload: dict = None):
     try:
-        response = requests.get(url, headers=headers, timeout=10)  # Add timeout for safety
-        response.raise_for_status()  # Raise an exception for HTTP errors
+        if req_type == RequestType.GET:
+            # For GET, payload goes into params
+            response = requests.get(url, params=payload)
+        elif req_type == RequestType.POST:
+            # For POST, payload goes into json body
+            response = requests.post(url, data=payload)
+        return True, response
     except requests.exceptions.HTTPError as http_err:
-        st.error(f"HTTP error occurred while downloading image '{name}': {http_err}")
-        return None
+        error_msg = f"HTTP error occurred: {http_err}"
+        # Check if a response object exists before accessing its attributes
+        if http_err.response is not None:
+            if http_err.response.status_code is not None: # status_code itself can be None in some edge cases
+                error_msg += f", Status Code: {http_err.response.status_code}"
+            # Use http_err.response.text to get the body content, not just http_err.response itself
+            if http_err.response.text: # Check if response_text is not empty
+                error_msg += f", Response Text: {http_err.response.text}"
+        return False, error_msg
     except requests.exceptions.ConnectionError:
-        st.error(f"Connection error occurred while accessing '{url}'. Please check your internet connection or the URL.")
-        return None
+        return False, "Connection error. Is the server running or URL correct?"
+        
     except requests.exceptions.Timeout:
-        st.error(f"Request timed out while accessing '{url}'.")
-        return None
+        return False, "Timeout error: The request took too long."
     except requests.exceptions.RequestException as err:
-        st.error(f"An unexpected error occurred while downloading image '{name}': {err}")
-        return None
-    else:
-        image_data = BytesIO(response.content)
-        return image_data
-
-# def safe_call_api(req_type, url, payload=None):
+        return False, f"An unexpected request error occurred: {err}"
+    except Exception as e:
+        return False, f"An unexpected error occurred: {e}"
 
 
-def display_img_with_download(name, url):
-    image_data = fetch_image_from_url(name, url)
-    if image_data:
-        st.image(image_data, caption=name, width=500)
-        st.download_button(
-            label="Download Image",
-            data=image_data,
-            file_name=f"{name.replace(' ', '_')}.jpg",
-            mime="image/jpeg",
-            on_click="ignore"
-        )
 
 def generate_file_name():
     # Singapore time
@@ -61,9 +60,20 @@ def generate_file_name():
     filename = f"{timestamp}_{random_hash}"
     return filename
 
-def display_img_with_download_thumbnail(name, url):
-    image_data = fetch_image_from_url(name,url)
+def display_img_with_download(img_bytes, name):
+    if img_bytes:
+        st.image(BytesIO(img_bytes), caption=name, width=500)
+        st.download_button(
+            label="Download Image",
+            data=img_bytes,
+            file_name=f"{name.replace(' ', '_')}.jpg",
+            mime="image/jpeg",
+            on_click="ignore"
+        )
+    else:
+        st.error("Passed bad data into display image")
 
+def display_img_with_download_thumbnail(image_data, name):
     if image_data:
         # Create a thumbnail-style card layout
         with st.container():
@@ -85,30 +95,3 @@ def display_img_with_download_thumbnail(name, url):
 
 
 
-class RequestType(str, Enum):
-    GET = "GET"
-    POST = "POST"
-
-
-def safe_call_api(req_type: RequestType, url: str, payload: dict = None):
-    try:
-        if req_type == RequestType.GET:
-            response = requests.get(url, params=payload)
-        elif req_type == RequestType.POST:
-            response = requests.post(url, data=payload)
-
-        response.raise_for_status()
-
-        try:
-            return response.json()
-        except ValueError:
-            return {"error": "Response is not valid JSON", "raw": response.text}
-
-    except requests.exceptions.HTTPError as http_err:
-        return {"error": f"HTTP error occurred: {http_err}"}
-    except requests.exceptions.ConnectionError:
-        return {"error": "Connection error. Is the server running?"}
-    except requests.exceptions.Timeout:
-        return {"error": "Timeout error."}
-    except requests.exceptions.RequestException as err:
-        return {"error": f"Unexpected error: {err}"}

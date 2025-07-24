@@ -10,4 +10,4 @@ EXPOSE 8000
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["fastapi", "dev", "main.py"]
+CMD ["fastapi", "run", "main.py"]
