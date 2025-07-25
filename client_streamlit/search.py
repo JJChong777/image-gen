@@ -1,5 +1,5 @@
 import streamlit as st
-from modules import display_img_with_download_thumbnail
+from modules import display_img_with_download_thumbnail, make_safe_img_get, RequestType
 
 def search_images(query):
     # Simulated search result
@@ -35,7 +35,11 @@ def main():
         cols = st.columns(3)
         for i, (name, url) in enumerate(results):
             with cols[i % 3]:
-                display_img_with_download_thumbnail(name, url)
+                success, img_response = make_safe_img_get(url)
+                if success:
+                    display_img_with_download_thumbnail(img_response, name)
+                else:
+                    st.error(img_response)
 
 
 if __name__ == "__main__":
