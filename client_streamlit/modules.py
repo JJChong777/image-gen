@@ -12,7 +12,7 @@ import string
 def fetch_image_from_url(name, url):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"}
     try:
-        response = requests.get(url, headers=headers, timeout=10)  # Add timeout for safety
+        response = requests.get(url, headers=headers, )  # Add timeout for safety
         response.raise_for_status()  # Raise an exception for HTTP errors
     except requests.exceptions.HTTPError as http_err:
         st.error(f"HTTP error occurred while downloading image '{name}': {http_err}")

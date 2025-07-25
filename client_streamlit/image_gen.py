@@ -1,8 +1,14 @@
 import streamlit as st
 from modules import display_img_with_download, generate_file_name
+import requests
 
 def generate_image(prompt):
-    return "https://upload.wikimedia.org/wikipedia/commons/1/1a/YF-16_and_YF-17_in_flight.jpg"
+    url = 'http://127.0.0.1:8000/input'
+    data = {'user_input': prompt}
+    response = requests.post(url, data=data)
+    print(response.status_code)
+    print(response.json())
+    return 'http://127.0.0.1:8000/image'
 
 def main():
     st.title("Generate a image")
@@ -55,6 +61,7 @@ def main():
             st.error("Message with invalid role") 
 
     if prompt:
+        prompt = prompt.text
         with st.chat_message("user"):
             st.markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
