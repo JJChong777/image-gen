@@ -2,7 +2,7 @@ services:
   fast-api:
     build:
       context: .
-      dockerfile: dockerfile.fastapi
+      dockerfile: dockerfile_experimental.fastapi
     container_name: fast-api
     image: gen_design_backend
     ports:
