@@ -7,7 +7,7 @@
 
 # Setup before running server (Important)
 - Download WSL 2 Ubuntu 22.04 from Windows Store https://apps.microsoft.com/detail/9pn20msr04dw?hl=en-US&gl=US
-- docker desktop https://www.docker.com/products/docker-desktop/
+- Download docker desktop https://www.docker.com/products/docker-desktop/
 - Create a file in C:\Users\YourUsername\.wslconfig and write
 
 [wsl2]
