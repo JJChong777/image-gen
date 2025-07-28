@@ -2,7 +2,7 @@ services:
   fast-api:
     build:
       context: .
-      dockerfile: dockerfile_experimental.fastapi
+      dockerfile: dockerfile.fastapi
     container_name: fast-api
     image: gen_design_backend
     ports:
@@ -10,6 +10,12 @@ services:
     env_file: ".env"
     volumes:
       - ./server_api:/app
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    runtime: nvidia
   streamlit:
     build:
       context: .
