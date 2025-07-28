@@ -10,7 +10,7 @@
 - Download docker desktop https://www.docker.com/products/docker-desktop/
 - Create a file in C:\Users\YourUsername\.wslconfig and write
 
-[wsl2]
+[wsl2]  
 memory=20GB  # Max RAM WSL2/Docker can use  
 processors=4  # Number of CPUs  
 swap=8GB  # Swap file size  
