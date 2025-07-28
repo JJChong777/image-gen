@@ -1,37 +1,39 @@
-# --- Stage 1: Build Conda Environment ---
-FROM continuumio/miniconda3 AS builder
+FROM nvidia/cuda:12.6.0-runtime-ubuntu22.04
 
-WORKDIR /build_env
+# --- Install system dependencies ---
+RUN apt-get update && apt-get install -y \
+    wget curl bzip2 ca-certificates libglib2.0-0 libxext6 libsm6 libxrender1 git \
+    software-properties-common libssl-dev && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y python3.10 python3.10-venv python3.10-dev && \
+    ln -sf /usr/bin/python3.10 /usr/bin/python && \
+    ln -sf /usr/bin/python3.10 /usr/bin/python3
 
-COPY server_api/environment.yml .
+# --- Install micromamba (fast conda alternative) ---
+ENV MAMBA_ROOT_PREFIX=/opt/micromamba
+ENV PATH=$MAMBA_ROOT_PREFIX/bin:$PATH
 
-# Install conda-pack
-RUN conda install -y conda-pack && \
-    conda env create -f environment.yml && \
-    conda clean -afy
+RUN curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj -C /usr/local/bin/ --strip-components=1 bin/micromamba
 
-# Pack the environment
-RUN conda-pack -n fastapi_app_env -o /env.tar.gz
-
-# --- Stage 2: Final Image ---
-FROM nvidia/cuda:12.8.0-runtime-ubuntu22.04
-
+# --- Create working directory ---
 WORKDIR /app
 
-# Copy and unpack the environment
-COPY --from=builder /env.tar.gz /env.tar.gz
+# --- Copy environment file and install env ---
+COPY server_api/environment.yml .
 
-RUN mkdir -p /opt/conda/envs/fastapi_app_env && \
-    tar -xzf /env.tar.gz -C /opt/conda/envs/fastapi_app_env && \
-    /opt/conda/envs/fastapi_app_env/bin/conda-unpack
+RUN micromamba create -y -n fastapi_app_env -f environment.yml && \
+    micromamba clean --all --yes
 
-# Set PATH to use conda env
-ENV PATH="/opt/conda/envs/fastapi_app_env/bin:$PATH"
+# --- Activate env and set up path ---
+ENV CONDA_DEFAULT_ENV=fastapi_app_env
+ENV PATH=$MAMBA_ROOT_PREFIX/envs/fastapi_app_env/bin:$PATH
 ENV PYTHONUNBUFFERED=1
 
-# Copy app code
+# --- Copy application code ---
 COPY server_api/ .
 
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# --- Run app ---
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

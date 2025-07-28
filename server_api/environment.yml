@@ -117,7 +117,7 @@ dependencies:
       - tenacity==9.1.2
       - tokenizers==0.21.1
       - toml==0.10.2
-      - torch==2.7.1               # PyTorch installed via pip with proper CUDA version if needed
+      - torch==2.7.1               # PyTorch installed via pip with proper CUDA version
       - torchaudio==2.7.1
       - torchvision==0.22.1
       - tornado==6.5.1
