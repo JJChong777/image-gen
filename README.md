@@ -19,24 +19,24 @@ localhostForwarding=true
 to allow stable diffusion to eat all your system memory
 
 # Run server on docker
-- `docker compose up --build fast-api`
-- Wait for Model to load after `Loading Model...` logged in your terminal
-This is the ideal output you should get
-etching 18 files: 100%|██████████| 18/18 [04:21<00:00, 14.50s/it]
-Loading pipeline components...: 100%|██████████| 7/7 [00:02<00:00,  3.35it/s]
-fast-api       | INFO:     Application startup complete.
-fast-api       | Model loaded successfully.
-fast-api       | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+- `docker compose up --build fast-api`  
+- Wait for Model to load after `Loading Model...` logged in your terminal  
+This is the ideal output you should get  
+etching 18 files: 100%|██████████| 18/18 [04:21<00:00, 14.50s/it]  
+Loading pipeline components...: 100%|██████████| 7/7 [00:02<00:00,  3.35it/s]  
+fast-api       | INFO:     Application startup complete.  
+fast-api       | Model loaded successfully.  
+fast-api       | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)  
 
 - Test if the server is up using these commands
 
-Check if server is healthy: curl http://localhost:8000/
-Expected output:
-{"message": "ok"}
+Check if server is healthy: curl http://localhost:8000/  
+Expected output:  
+{"message": "ok"}  
 
-Send prompt: curl -X POST -F "user_input=cat in a hat" http://localhost:8000/input 
-Expected output:
-{"message":"Input received: cat in a hat"}
+Send prompt: curl -X POST -F "user_input=cat in a hat" http://localhost:8000/input  
+Expected output:  
+{"message":"Input received: cat in a hat"}  
 
 Get image: curl -o output.png http://localhost:8000/image   
 Expected output:
