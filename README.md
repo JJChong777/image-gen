@@ -11,10 +11,10 @@
 - Create a file in C:\Users\YourUsername\.wslconfig and write
 
 [wsl2]
-memory=20GB  # Max RAM WSL2/Docker can use
-processors=4  # Number of CPUs
-swap=8GB  # Swap file size
-localhostForwarding=true
+memory=20GB  # Max RAM WSL2/Docker can use  
+processors=4  # Number of CPUs  
+swap=8GB  # Swap file size  
+localhostForwarding=true  
 
 to allow stable diffusion to eat all your system memory
 
