@@ -20,8 +20,8 @@ to allow stable diffusion to eat all your system memory
 
 # Run server on docker
 - `docker compose up --build fast-api`  
-- Wait for Model to load after `Loading Model...` logged in your terminal  (takes very long, you can go grab a coffee first)
-- Open task manager and watch all your memory get eaten by stable diffusion (20GB of RAM gone)
+- Wait for Model to load after `Loading Model...` logged in your terminal  (takes very long, you can go grab a coffee first)  
+- Open task manager and watch all your memory get eaten by stable diffusion (20GB of RAM gone)  
 This is the ideal output you should get  
 etching 18 files: 100%|██████████| 18/18 [04:21<00:00, 14.50s/it]  
 Loading pipeline components...: 100%|██████████| 7/7 [00:02<00:00,  3.35it/s]  
