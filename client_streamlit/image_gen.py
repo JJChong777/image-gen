@@ -22,8 +22,8 @@ def main():
         st.session_state.image_cache = {}
     if "chat_disabled" not in st.session_state:
         st.session_state.chat_disabled = False
-    if "last_prompt" not in st.session_state:
-        st.session_state.last_prompt = False
+    if "last_prompt_text" not in st.session_state:
+        st.session_state.last_prompt_text = False
 
     prompt = st.chat_input(placeholder="Type your image generation prompt here...",
         accept_file=True,
@@ -74,18 +74,18 @@ def main():
 
     if prompt:
         st.session_state.chat_disabled = True
-        st.session_state.last_prompt = prompt
+        st.session_state.last_prompt_text = prompt.text
         st.rerun()
     
-    if st.session_state.last_prompt:
-        last_prompt = st.session_state.last_prompt
+    if st.session_state.last_prompt_text:
+        last_prompt_text = st.session_state.last_prompt_text
         with st.chat_message("user"):
-            st.markdown(last_prompt)
-        st.session_state.messages.append({"role": "user", "content": last_prompt})
+            st.markdown(last_prompt_text)
+        st.session_state.messages.append({"role": "user", "content": last_prompt_text})
         with st.chat_message("assistant"):
             with st.spinner("Sending prompt to server..."):
                 # time.sleep(2) # uncomment if testing spinner or delay
-                success, prompt_response = send_prompt(last_prompt)
+                success, prompt_response = send_prompt(last_prompt_text)
                 if success:
                     message = prompt_response.json().get("message")
                     st.success(message)
@@ -103,7 +103,7 @@ def main():
                 st.session_state.image_cache[img_name] = img_bytes
                 st.session_state.messages.append({"role": "assistant", "content": None, "ok": True, "img_name": img_name})
                 st.session_state.chat_disabled = False
-                st.session_state.last_prompt = None
+                st.session_state.last_prompt_text = None
                 st.rerun()
 
 if __name__ == "__main__":
