@@ -10,7 +10,7 @@ Important: You need at least 48 GB of RAM to run this because Stable Diffusion e
 
 - Download WSL 2 Ubuntu 22.04 from Windows Store https://apps.microsoft.com/detail/9pn20msr04dw?hl=en-US&gl=US
 - Download docker desktop https://www.docker.com/products/docker-desktop/
-- Create a file in C:\Users\YourUsername\.wslconfig and write
+- Create a file in C:/Users/YourUsername/.wslconfig (the file is called .wslconfig in the directory and write
 
 [wsl2]  
 memory=20GB  # Max RAM WSL2/Docker can use  
