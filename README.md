@@ -38,8 +38,8 @@ fast-api       | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C 
 
 (experimental image editing model)
 - Wait for FLUX.1-Kontext-dev to load after `Loading image editing model...` logged in your terminal  (takes extremely long (approx 30+min), you can go eat lunch first)
-- Open task manager and watch all your memory get eaten by the Flux Kontext model (30+GB of RAM gone)
-This is the ideal output you should get
+- Open task manager and watch all your memory get eaten by the Flux Kontext model (30+GB of RAM gone) will look into improving model loading time 
+This is the ideal output you should get:  
 Fetching 23 files: 100%|██████████| 23/23 [31:33<00:00, 82.31s/it]
 Loading pipeline components...:  29%|██▊       | 2/7 [00:02<00:05,  1.06s/it]You set `add_prefix_space`. The tokenizer needs to be converted from the slow tokenizers
 Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00, 13.27it/s]it/s]  
