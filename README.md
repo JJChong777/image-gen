@@ -12,11 +12,11 @@ Important: You need at least 48 GB of RAM to run this because Stable Diffusion e
 - Download docker desktop https://www.docker.com/products/docker-desktop/
 - Create a file in C:/Users/YourUsername/.wslconfig (the file is called .wslconfig in the directory and write
 
-[wsl2]  
-memory=20GB  # Max RAM WSL2/Docker can use  
-processors=4  # Number of CPUs  
-swap=8GB  # Swap file size  
-localhostForwarding=true  
+`[wsl2]`    
+`memory=20GB  # Max RAM WSL2/Docker can use`    
+`processors=4  # Number of CPUs`    
+`swap=8GB  # Swap file size`    
+`localhostForwarding=true`    
 
 to allow stable diffusion to eat all your system memory  
 
@@ -36,15 +36,15 @@ fast-api       | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C 
 
 - Test if the server is up using these commands
 
-Check if server is healthy: curl http://localhost:8000/  
+Check if server is healthy: `curl http://localhost:8000/`    
 Expected output:  
 {"message": "ok"}  
 
-Send prompt: curl -X POST -F "user_input=cat in a hat" http://localhost:8000/input  
+Send prompt: `curl -X POST -F "user_input=cat in a hat" http://localhost:8000/input`    
 Expected output:  
 {"message":"Input received: cat in a hat"}  
 
-Get image: curl -o output.png http://localhost:8000/image   
+Get image: `curl -o output.png http://localhost:8000/image`     
 Expected output:
 % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed  
