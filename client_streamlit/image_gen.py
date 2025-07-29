@@ -77,6 +77,7 @@ def main():
     if prompt:
         st.session_state.chat_disabled = True
         st.session_state.last_prompt_text = prompt.text
+        st.session_state.last_img_file = prompt.files[0]
         st.rerun()
     
     if st.session_state.last_prompt_text:
