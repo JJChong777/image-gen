@@ -32,7 +32,9 @@ def main():
         )
 
     suggested_questions = [
-        "Generate an image of a cat with a hat"
+        "Cat with a hat",
+        "F16 plane in blue sky",
+        "Happy birthday strawberry shortcake"
     ]
 
     with st.chat_message("assistant"):
