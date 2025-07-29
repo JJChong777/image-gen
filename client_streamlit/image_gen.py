@@ -3,7 +3,7 @@ from modules import display_img_with_download, RequestType, make_safe_request, A
 import time
 
 
-def send_prompt(prompt):
+def send_prompt(prompt: str):
     input_url = f"{API_URL}/input"
     payload = {'user_input': f'{prompt}'}
     return make_safe_request(RequestType.POST, input_url, payload)

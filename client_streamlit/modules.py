@@ -17,7 +17,7 @@ class RequestType(str, Enum):
     GET = "GET"
     POST = "POST"
 
-def make_safe_request(req_type: RequestType, url: str, payload: dict = None):
+def make_safe_request(req_type: RequestType, url: str, payload: dict = None) -> tuple[bool, bytes | str]:
     try:
         if req_type == RequestType.GET:
             # For GET, payload goes into params
@@ -91,7 +91,7 @@ def generate_file_name():
     filename = f"{timestamp}_{random_hash}"
     return filename
 
-def display_img_with_download(img_bytes, name):
+def display_img_with_download(img_bytes: bytes, name: str):
     if img_bytes:
         st.image(BytesIO(img_bytes), caption=name, width=500)
         st.download_button(
