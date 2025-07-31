@@ -85,9 +85,12 @@ def main():
                     if msg["content"]:
                         with st.chat_message("assistant"):
                             st.markdown(msg["content"])
-
         else:
             st.error("Message with invalid role") 
+
+    # clear session state button
+    if (len(st.session_state.messages) > 1):
+        st.button("Clear Session State", key="clear_chat_button", on_click=clear_session_state)
 
     if prompt:
         st.session_state.chat_disabled = True
@@ -99,9 +102,9 @@ def main():
     if st.session_state.last_prompt_img and st.session_state.last_prompt_text:
         last_prompt_text = st.session_state.last_prompt_text
         last_prompt_img = st.session_state.last_prompt_img
-        st.write(last_prompt_img)
         with st.chat_message("user"):
             st.markdown(f"{last_prompt_text}, image attached: {last_prompt_img.name}")
+        st.session_state.messages.append({"role": "user", "content": last_prompt_text})
         with st.chat_message("assistant"):
             with st.spinner("Sending prompt and image file to server..."):
                 time.sleep(5) # uncomment if testing spinner or delay
@@ -110,12 +113,21 @@ def main():
                     message = prompt_response.json().get("message")
                     st.success(message)
                 else:
-                    st.session_state.messages.append({"role": "assistant", "content": prompt_response, "ok": False})
+                    error_msg = f"Failed to send prompt and image: {prompt_response}"
+                    st.session_state.messages.append({"role": "assistant", "content": error_msg, "ok": False})
+                    st.session_state.chat_disabled = False
+                    st.session_state.last_prompt_text = None
+                    st.session_state.last_prompt_img = None
+                    st.rerun()
             with st.spinner("Fetching edited image from server..."):
                 time.sleep(5) # uncomment if testing spinner or delay
                 success, img_response = fetch_edited_image()
                 if not success: 
+                    error_msg = f"Failed to fetch edited image: {prompt_response}"
                     st.session_state.messages.append({"role": "assistant", "content": img_response, "ok": False})
+                    st.session_state.chat_disabled = False
+                    st.session_state.last_prompt_text = None
+                    st.session_state.last_prompt_img = None
                     return
                 img_name = generate_file_name()
                 img_bytes = img_response.content
@@ -139,14 +151,22 @@ def main():
                     message = prompt_response.json().get("message")
                     st.success(message)
                 else:
-                    st.session_state.messages.append({"role": "assistant", "content": prompt_response, "ok": False})
-                    return
+                    error_msg = f"Failed to send prompt: {prompt_response}"
+                    st.session_state.messages.append({"role": "assistant", "content": error_msg, "ok": False})
+                    st.session_state.chat_disabled = False
+                    st.session_state.last_prompt_text = None
+                    st.session_state.last_prompt_img = None
+                    st.rerun()
             with st.spinner("Fetching image from server..."):
                 # time.sleep(2) # uncomment if testing spinner or delay
                 success, img_response = fetch_image()
                 if not success: 
-                    st.session_state.messages.append({"role": "assistant", "content": img_response, "ok": False})
-                    return
+                    error_msg = f"Failed to fetch generated image: {prompt_response}"
+                    st.session_state.messages.append({"role": "assistant", "content": error_msg, "ok": False})
+                    st.session_state.chat_disabled = False
+                    st.session_state.last_prompt_text = None
+                    st.session_state.last_prompt_img = None
+                    st.rerun()
                 img_name = generate_file_name()
                 img_bytes = img_response.content
                 st.session_state.image_cache[img_name] = img_bytes
@@ -155,9 +175,7 @@ def main():
                 st.session_state.last_prompt_text = None
                 st.rerun()
 
-    # clear session state button
-    if (len(st.session_state.messages) > 1):
-        st.button("Clear Session State", key="clear_chat_button", on_click=clear_session_state)
+
 
 if __name__ == "__main__":
     main()
