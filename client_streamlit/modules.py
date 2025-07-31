@@ -25,6 +25,7 @@ def make_safe_request(req_type: RequestType, url: str, payload: dict = None) -> 
         elif req_type == RequestType.POST:
             # For POST, payload goes into json body
             response = requests.post(url, data=payload)
+        response.raise_for_status()
         return True, response
     except requests.exceptions.HTTPError as http_err:
         error_msg = f"HTTP error occurred: {http_err}"
