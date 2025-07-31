@@ -91,18 +91,53 @@ def generate_file_name():
     filename = f"{timestamp}_{random_hash}"
     return filename
 
-def display_img_with_download(img_bytes: bytes, name: str):
-    if img_bytes:
-        st.image(BytesIO(img_bytes), caption=name, width=500)
+def display_img_with_download(img_bytes, name):
+    try:
+        # Check if img_bytes is actually valid image data
+        if not img_bytes:
+            st.error("No image data received")
+            return
+        
+        # Try to validate the image data
+        try:
+            # Test if it's valid image data
+            test_image = Image.open(BytesIO(img_bytes))
+            test_image.verify()  # Verify it's a valid image
+        except Exception as e:
+            st.error(f"Invalid image data: {str(e)}")
+            st.error("The response from the server is not a valid image")
+            # Debug: show first 100 characters of the response
+            if isinstance(img_bytes, bytes):
+                st.error(f"Response starts with: {img_bytes[:100]}")
+            return
+        
+        # Reset BytesIO position after verify()
+        img_io = BytesIO(img_bytes)
+        
+        # Display the image
+        st.image(img_io, caption=name, width=500)
+        
+        # Add download button
         st.download_button(
-            label="Download Image",
+            label=f"Download {name}",
             data=img_bytes,
-            file_name=f"{name.replace(' ', '_')}.jpg",
-            mime="image/jpeg",
-            on_click="ignore"
+            file_name=name,
+            mime="image/png"
         )
-    else:
-        st.error("Passed bad data into display image")
+        
+    except Exception as e:
+        st.error(f"Error displaying image: {str(e)}")
+        # Show debug info
+        st.error(f"Image bytes type: {type(img_bytes)}")
+        if hasattr(img_bytes, '__len__'):
+            st.error(f"Image bytes length: {len(img_bytes)}")
+        # Show first 200 characters if it's text/HTML error response
+        if isinstance(img_bytes, bytes):
+            try:
+                preview = img_bytes[:200].decode('utf-8', errors='ignore')
+                st.error(f"Response preview: {preview}")
+            except:
+                st.error("Could not decode response as text")
 
 def process_image_bytes_to_thumbnail(image_bytes: bytes, name: str) -> bytes | None:
     """

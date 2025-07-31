@@ -118,29 +118,94 @@ def root():
 #         last_input = ""
 #         raise HTTPException(status_code=500, detail=f"Error generating image: {e}")
 
-@app.post("/input_image") # curl -X POST "http://localhost:8000/input_image" -F "user_input=make this cat robotic" -F "image=@\"server_api/generated_images/cat in a hat.png\""
+# @app.post("/input_image") # curl -X POST "http://localhost:8000/input_image" -F "user_input=make this cat robotic" -F "image=@\"server_api/generated_images/cat in a hat.png\""
+# async def receive_input_image(user_input: str = Form(...), image: UploadFile = File(...)):
+#     global last_input
+#     global last_input_image
+#     last_input = user_input
+#     # image file name setting
+#     image_filename = image.name or "uploaded_image.png"
+#     # Read image bytes
+#     # TODO: The image input received should be a URL linking to an image, a local path, or a PIL image, not bytes.
+#     # Fix this line later 
+#     image_bytes = await image.read()
+#     # Convert bytes to PIL.Image
+#     pil_image = Image.open(BytesIO(image_bytes)).convert("RGB")
+#     user_image = load_image(pil_image)
+#     last_input_image = user_image
+#     # Ensure the directory exists
+#     image_path = f"uploaded_images/{image_filename}"
+#     os.makedirs("uploaded_images", exist_ok=True)
+#     # Save it to disk
+#     image.save(image_path)
+#     # with open(f"uploaded_images/{image.name}", "wb") as f:
+#     #     f.write(image_bytes)
+    
+#     print(f"Received prompt: {last_input}, Received image: {image.name}")
+#     return {"message": f"Prompt received: {user_input}, File received: {image.name}"}
+
+@app.post("/input_image")
 async def receive_input_image(user_input: str = Form(...), image: UploadFile = File(...)):
     global last_input
     global last_input_image
-    last_input = user_input
-    # Read image bytes
-    # TODO: The image input received should be a URL linking to an image, a local path, or a PIL image, not bytes.
-    # Fix this line later 
-    image = await image.read()
-    # Convert bytes to PIL.Image
-    # pil_image = Image.open(BytesIO(image_bytes)).convert("RGB")
-    user_image = load_image(image)
-    last_input_image = user_image
-    # Ensure the directory exists
-    image_path = f"uploaded_images/{image.name}"
-    os.makedirs("uploaded_images", exist_ok=True)
-    # Save it to disk
-    image.save(image_path)
-    # with open(f"uploaded_images/{image.name}", "wb") as f:
-    #     f.write(image_bytes)
     
-    print(f"Received prompt: {last_input}, Received image: {image.name}")
-    return {"message": f"Prompt received: {user_input}, File received: {image.name}"}
+    print(f"Received user_input: {user_input}")
+    print(f"Received image filename: {image.filename}")
+    print(f"Received image content_type: {image.content_type}")
+    print(f"Received image size: {image.size}")
+    
+    try:
+        last_input = user_input
+        
+        # Store the filename before reading
+        image_filename = image.filename or "uploaded_image.png"
+        
+        # Read image bytes
+        image_bytes = await image.read()
+        print(f"Read {len(image_bytes)} bytes from uploaded file")
+        
+        # Check if we actually got image data
+        if len(image_bytes) == 0:
+            raise HTTPException(status_code=422, detail="Uploaded file is empty")
+        
+        # Convert bytes to PIL.Image
+        try:
+            pil_image = Image.open(BytesIO(image_bytes)).convert("RGB")
+            print(f"Successfully created PIL image: {pil_image.size}")
+        except Exception as pil_error:
+            print(f"Error creating PIL image: {str(pil_error)}")
+            raise HTTPException(status_code=422, detail=f"Invalid image format: {str(pil_error)}")
+        
+        # Use load_image function (modify based on what your function expects)
+        try:
+            user_image = load_image(pil_image)  # or load_image(image_bytes)
+            last_input_image = user_image
+            print("Successfully processed image with load_image function")
+        except Exception as load_error:
+            print(f"Error in load_image function: {str(load_error)}")
+            # Continue anyway, just store the PIL image
+            last_input_image = pil_image
+        
+        # Ensure the directory exists
+        os.makedirs("uploaded_images", exist_ok=True)
+        
+        # Save PIL image to disk
+        image_path = f"uploaded_images/{image_filename}"
+        pil_image.save(image_path)
+        print(f"Saved image to: {image_path}")
+        
+        print(f"Successfully processed: {last_input}, {image_filename}")
+        return {"message": f"Prompt received: {user_input}, File received: {image_filename}"}
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        print(f"Unexpected error processing image: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 # hardcoded image editing API to test proper link with FastAPI (for frontend testing)
 @app.get("/edit")  # http://127.0.0.1:8000/image
