@@ -162,7 +162,28 @@ def main():
                     
             with st.spinner("Fetching edited image from server..."):
                 success, img_response = fetch_edited_image()
-                if not success: 
+                if success: 
+                    # Check if response is actually an image
+                    content_type = img_response.headers.get('content-type', '')
+                    if not content_type.startswith('image/'):
+                        error_msg = f"Server returned non-image content: {content_type}"
+                        if hasattr(img_response, 'text'):
+                            error_msg += f" ,Response text: {img_response.text[:500]}"
+                        st.session_state.messages.append({"role": "assistant", "content": error_msg, "ok": False})
+                        st.session_state.chat_disabled = False
+                        st.session_state.last_prompt_text = None
+                        st.session_state.last_prompt_img = None
+                        st.rerun()
+                        
+                    img_name = generate_file_name()
+                    img_bytes = img_response.content
+                    st.session_state.image_cache[img_name] = img_bytes
+                    st.session_state.messages.append({"role": "assistant", "content": None, "ok": True, "img_name": img_name})
+                    st.session_state.chat_disabled = False
+                    st.session_state.last_prompt_text = None
+                    st.session_state.last_prompt_img = None
+                    st.rerun()
+                else:
                     error_msg = f"Failed to fetch edited image: {img_response}"
                     st.error(error_msg)
                     st.session_state.messages.append({"role": "assistant", "content": error_msg, "ok": False})
@@ -170,28 +191,7 @@ def main():
                     st.session_state.last_prompt_text = None
                     st.session_state.last_prompt_img = None
                     st.rerun()
-                
-                # Check if response is actually an image
-                content_type = img_response.headers.get('content-type', '')
-                if not content_type.startswith('image/'):
-                    error_msg = f"Server returned non-image content: {content_type}"
-                    st.error(error_msg)
-                    if hasattr(img_response, 'text'):
-                        st.error(f"Response text: {img_response.text[:500]}")
-                    st.session_state.messages.append({"role": "assistant", "content": error_msg, "ok": False})
-                    st.session_state.chat_disabled = False
-                    st.session_state.last_prompt_text = None
-                    st.session_state.last_prompt_img = None
-                    st.rerun()
-                    
-                img_name = generate_file_name()
-                img_bytes = img_response.content
-                st.session_state.image_cache[img_name] = img_bytes
-                st.session_state.messages.append({"role": "assistant", "content": None, "ok": True, "img_name": img_name})
-                st.session_state.chat_disabled = False
-                st.session_state.last_prompt_text = None
-                st.session_state.last_prompt_img = None
-                st.rerun()
+
 
 
     elif st.session_state.last_prompt_text:
@@ -216,20 +216,24 @@ def main():
             with st.spinner("Fetching image from server..."):
                 # time.sleep(2) # uncomment if testing spinner or delay
                 success, img_response = fetch_image()
-                if not success: 
+                if success: 
+                    # SUCCESS
+                    img_name = generate_file_name()
+                    img_bytes = img_response.content
+                    st.session_state.image_cache[img_name] = img_bytes
+                    st.session_state.messages.append({"role": "assistant", "content": None, "ok": True, "img_name": img_name})
+                    st.session_state.chat_disabled = False
+                    st.session_state.last_prompt_text = None
+                    st.rerun()
+                    # SUCCESS
+                else:
                     error_msg = f"Failed to fetch generated image: {prompt_response}"
                     st.session_state.messages.append({"role": "assistant", "content": error_msg, "ok": False})
                     st.session_state.chat_disabled = False
                     st.session_state.last_prompt_text = None
                     st.session_state.last_prompt_img = None
                     st.rerun()
-                img_name = generate_file_name()
-                img_bytes = img_response.content
-                st.session_state.image_cache[img_name] = img_bytes
-                st.session_state.messages.append({"role": "assistant", "content": None, "ok": True, "img_name": img_name})
-                st.session_state.chat_disabled = False
-                st.session_state.last_prompt_text = None
-                st.rerun()
+
 
 
 
