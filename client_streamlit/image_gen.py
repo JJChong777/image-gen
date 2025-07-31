@@ -72,11 +72,7 @@ def main():
     if "last_prompt_img" not in st.session_state:
         st.session_state.last_prompt_img = False
 
-    prompt = st.chat_input(placeholder="Type your image generation prompt here...",
-        accept_file=True,
-        file_type=["jpg", "jpeg", "png"],
-        disabled=st.session_state.chat_disabled
-        )
+
 
     suggested_questions = [
         "Cat with a hat",
@@ -95,7 +91,14 @@ def main():
             )
             submitted = st.form_submit_button('Submit Question')
             if submitted:
-                prompt = selected_question
+                st.session_state.chat_input = selected_question
+
+    prompt = st.chat_input(placeholder="Type your image generation prompt here...",
+        accept_file=True,
+        file_type=["jpg", "jpeg", "png"],
+        disabled=st.session_state.chat_disabled,
+        key="chat_input"
+        )
 
     for msg in st.session_state.messages:
         if msg["role"] == "user":
