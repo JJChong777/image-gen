@@ -107,7 +107,7 @@ def main():
         st.session_state.messages.append({"role": "user", "content": last_prompt_text})
         with st.chat_message("assistant"):
             with st.spinner("Sending prompt and image file to server..."):
-                time.sleep(5) # uncomment if testing spinner or delay
+                # time.sleep(5) # uncomment if testing spinner or delay
                 success, prompt_response = send_edit_image_prompt(prompt, last_prompt_img)
                 if success:
                     message = prompt_response.json().get("message")
@@ -120,7 +120,7 @@ def main():
                     st.session_state.last_prompt_img = None
                     st.rerun()
             with st.spinner("Fetching edited image from server..."):
-                time.sleep(5) # uncomment if testing spinner or delay
+                # time.sleep(5) # uncomment if testing spinner or delay
                 success, img_response = fetch_edited_image()
                 if not success: 
                     error_msg = f"Failed to fetch edited image: {prompt_response}"
