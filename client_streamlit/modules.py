@@ -122,7 +122,7 @@ def display_img_with_download(img_bytes, name):
         st.download_button(
             label=f"Download {name}",
             data=img_bytes,
-            file_name=name,
+            file_name=f"{name.replace(' ', '_')}.jpg",
             mime="image/png"
         )
         
