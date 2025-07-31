@@ -135,12 +135,6 @@ def main():
         last_prompt_text = st.session_state.last_prompt_text
         last_prompt_img = st.session_state.last_prompt_img
         
-        # Debug info
-        st.write(f"Debug - Prompt: {last_prompt_text}")
-        st.write(f"Debug - Image type: {type(last_prompt_img)}")
-        st.write(f"Debug - Image name: {last_prompt_img.name}")
-        st.write(f"Debug - Image size: {last_prompt_img.size}")
-        
         with st.chat_message("user"):
             st.markdown(f"{last_prompt_text}, image attached: {last_prompt_img.name}")
         
