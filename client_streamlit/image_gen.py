@@ -1,7 +1,7 @@
 import streamlit as st
 from modules import display_img_with_download, RequestType, make_safe_request, API_URL, generate_file_name
 import time
-
+from io import BytesIO
 
 def send_prompt(prompt: str):
     input_url = f"{API_URL}/input"
@@ -12,6 +12,19 @@ def fetch_image():
     image_url = f"{API_URL}/image"
     return make_safe_request(RequestType.GET, image_url)
 
+def send_edit_image_prompt(prompt: str, image: BytesIO):
+    input_url = f"{API_URL}/input_image"
+    payload = {'user_input': f'{prompt}', 'image': image}
+    return make_safe_request(RequestType.POST, input_url, payload)
+
+def fetch_edited_image():
+    image_url = f"{API_URL}/edit"
+    return make_safe_request(RequestType.GET, image_url)
+
+# reset everything back to the way it was (emergency button)
+def clear_session_state():
+    for key in st.session_state.keys():
+        del st.session_state[key]
     
 def main():
     st.title("Generate a image")
@@ -24,6 +37,8 @@ def main():
         st.session_state.chat_disabled = False
     if "last_prompt_text" not in st.session_state:
         st.session_state.last_prompt_text = False
+    if "last_prompt_img" not in st.session_state:
+        st.session_state.last_prompt_img = False
 
     prompt = st.chat_input(placeholder="Type your image generation prompt here...",
         accept_file=True,
@@ -70,16 +85,60 @@ def main():
                     if msg["content"]:
                         with st.chat_message("assistant"):
                             st.markdown(msg["content"])
-
         else:
             st.error("Message with invalid role") 
+
+    # clear session state button
+    if (len(st.session_state.messages) > 1):
+        st.button("Clear Session State", key="clear_chat_button", on_click=clear_session_state)
 
     if prompt:
         st.session_state.chat_disabled = True
         st.session_state.last_prompt_text = prompt.text
+        if prompt.files:
+            st.session_state.last_prompt_img = prompt.files[0]
         st.rerun()
     
-    if st.session_state.last_prompt_text:
+    if st.session_state.last_prompt_img and st.session_state.last_prompt_text:
+        last_prompt_text = st.session_state.last_prompt_text
+        last_prompt_img = st.session_state.last_prompt_img
+        with st.chat_message("user"):
+            st.markdown(f"{last_prompt_text}, image attached: {last_prompt_img.name}")
+        st.session_state.messages.append({"role": "user", "content": last_prompt_text})
+        with st.chat_message("assistant"):
+            with st.spinner("Sending prompt and image file to server..."):
+                # time.sleep(5) # uncomment if testing spinner or delay
+                success, prompt_response = send_edit_image_prompt(prompt, last_prompt_img)
+                if success:
+                    message = prompt_response.json().get("message")
+                    st.success(message)
+                else:
+                    error_msg = f"Failed to send prompt and image: {prompt_response}"
+                    st.session_state.messages.append({"role": "assistant", "content": error_msg, "ok": False})
+                    st.session_state.chat_disabled = False
+                    st.session_state.last_prompt_text = None
+                    st.session_state.last_prompt_img = None
+                    st.rerun()
+            with st.spinner("Fetching edited image from server..."):
+                # time.sleep(5) # uncomment if testing spinner or delay
+                success, img_response = fetch_edited_image()
+                if not success: 
+                    error_msg = f"Failed to fetch edited image: {prompt_response}"
+                    st.session_state.messages.append({"role": "assistant", "content": img_response, "ok": False})
+                    st.session_state.chat_disabled = False
+                    st.session_state.last_prompt_text = None
+                    st.session_state.last_prompt_img = None
+                    return
+                img_name = generate_file_name()
+                img_bytes = img_response.content
+                st.session_state.image_cache[img_name] = img_bytes
+                st.session_state.messages.append({"role": "assistant", "content": None, "ok": True, "img_name": img_name})
+                st.session_state.chat_disabled = False
+                st.session_state.last_prompt_text = None
+                st.rerun()
+
+
+    elif st.session_state.last_prompt_text:
         last_prompt_text = st.session_state.last_prompt_text
         with st.chat_message("user"):
             st.markdown(last_prompt_text)
@@ -92,14 +151,22 @@ def main():
                     message = prompt_response.json().get("message")
                     st.success(message)
                 else:
-                    st.session_state.messages.append({"role": "assistant", "content": prompt_response, "ok": False})
-                    return
+                    error_msg = f"Failed to send prompt: {prompt_response}"
+                    st.session_state.messages.append({"role": "assistant", "content": error_msg, "ok": False})
+                    st.session_state.chat_disabled = False
+                    st.session_state.last_prompt_text = None
+                    st.session_state.last_prompt_img = None
+                    st.rerun()
             with st.spinner("Fetching image from server..."):
                 # time.sleep(2) # uncomment if testing spinner or delay
                 success, img_response = fetch_image()
                 if not success: 
-                    st.session_state.messages.append({"role": "assistant", "content": img_response, "ok": False})
-                    return
+                    error_msg = f"Failed to fetch generated image: {prompt_response}"
+                    st.session_state.messages.append({"role": "assistant", "content": error_msg, "ok": False})
+                    st.session_state.chat_disabled = False
+                    st.session_state.last_prompt_text = None
+                    st.session_state.last_prompt_img = None
+                    st.rerun()
                 img_name = generate_file_name()
                 img_bytes = img_response.content
                 st.session_state.image_cache[img_name] = img_bytes
@@ -107,6 +174,8 @@ def main():
                 st.session_state.chat_disabled = False
                 st.session_state.last_prompt_text = None
                 st.rerun()
+
+
 
 if __name__ == "__main__":
     main()
