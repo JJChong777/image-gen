@@ -218,7 +218,7 @@ def get_edit_image():
     if not last_input_image:
         raise HTTPException(status_code=400, detail="No image has been provided in the /input_image endpoint. Please try again")
     # Return a hardcoded image file
-    image_path = "server_api/generated_images/cat in a hat.png"  # Change as needed
+    image_path = "generated_images/cat in a hat.png"  # Change as needed
     return FileResponse(image_path, media_type="image/png", filename="robot_cat.png")
 
 

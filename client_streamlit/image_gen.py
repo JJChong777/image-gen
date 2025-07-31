@@ -168,15 +168,6 @@ def main():
                     
             with st.spinner("Fetching edited image from server..."):
                 success, img_response = fetch_edited_image()
-                
-                # Debug: Check what we got back
-                st.write(f"Debug - Image fetch success: {success}")
-                if hasattr(img_response, 'status_code'):
-                    st.write(f"Debug - Response status: {img_response.status_code}")
-                if hasattr(img_response, 'content'):
-                    st.write(f"Debug - Response content length: {len(img_response.content)}")
-                    st.write(f"Debug - Response content type: {img_response.headers.get('content-type', 'unknown')}")
-                
                 if not success: 
                     error_msg = f"Failed to fetch edited image: {img_response}"
                     st.error(error_msg)
