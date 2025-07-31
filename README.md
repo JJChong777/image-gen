@@ -5,7 +5,29 @@
 - `pip install -r requirements.txt`
 - `python -m streamlit run app.py`
 
-# Setup before running server (Important)
+# Run server on its own (conda environment, warning: not tested)
+Important: You need to install NVIDIA CUDA 12.6 and above (https://developer.nvidia.com/cuda-12-6-0-download-archive)
+
+Install conda manager
+- Install one of the conda managers: miniconda https://www.anaconda.com/docs/getting-started/miniconda/install or micromambda (https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html)
+- `cd server_api`
+
+Create venv with environment.yml
+- micromamba: `micromamba env create -f environment.yaml -n fastapi_app_env` OR
+- miniconda: `conda env create -f environment.yaml -n fastapi_app_env`
+
+Activate environment
+- micromamba: `micromamba activate fastapi_app_env` OR
+- miniconda: `conda activate fastapi_app_env`
+
+Update environment (not sure, just try)
+- micromamba: `micromamba env update -f environment.yaml` OR
+- miniconda: `conda env update -f environment.yaml`
+
+- Activate the server
+`uvicorn main:app --host 0.0.0.0 --port 8000`
+
+# Setup before running server on docker (Important)
 Important: You need at least 48 GB of RAM to run this because Stable Diffusion eats 20GB already
 
 - Download WSL 2 Ubuntu 22.04 from Windows Store https://apps.microsoft.com/detail/9pn20msr04dw?hl=en-US&gl=US
