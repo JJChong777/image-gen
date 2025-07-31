@@ -9,7 +9,7 @@
 Important: You need to install NVIDIA CUDA 12.6 and above (https://developer.nvidia.com/cuda-12-6-0-download-archive)
 
 Install conda manager
-- Install one of the conda managers: miniconda https://www.anaconda.com/docs/getting-started/miniconda/install or micromambda (https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html)
+- Install one of the conda managers: miniconda (https://www.anaconda.com/docs/getting-started/miniconda/install) or micromambda (https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html)
 - `cd server_api`
 
 Create venv with environment.yml
