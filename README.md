@@ -24,8 +24,8 @@ Update environment (not sure, just try)
 - micromamba: `micromamba env update -f environment.yaml` OR
 - miniconda: `conda env update -f environment.yaml`
 
-- Activate the server
-`uvicorn main:app --host 0.0.0.0 --port 8000`
+Activate the server
+- `uvicorn main:app --host 0.0.0.0 --port 8000`
 
 # Setup before running server on docker (Important)
 Important: You need at least 48 GB of RAM to run this because Stable Diffusion eats 20GB already
