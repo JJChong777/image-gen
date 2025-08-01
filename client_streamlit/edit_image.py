@@ -48,7 +48,7 @@ def main():
     st.title("Edit a image with AI")
 
     if "messages_edit" not in st.session_state:
-        st.session_state.messages_edit = [{"role": "assistant", "content": "Hi, I'm the Image Generation Chatbot! Type in a prompt to get started", "ok":True, "img_name": None}]
+        st.session_state.messages_edit = [{"role": "assistant", "content": "Hi, I'm the Image Editing Chatbot! Type in a prompt to get started", "ok":True, "img_name": None}]
     if "image_cache_edit" not in st.session_state:
         st.session_state.image_cache_edit = {}
     if "chat_disabled_edit" not in st.session_state:
@@ -112,20 +112,16 @@ def main():
         st.session_state.last_prompt_text_edit = prompt.text
         if prompt.files:
             st.session_state.last_prompt_img_edit = prompt.files[0]
+        # Add user message to session state
+        st.session_state.messages_edit.append({
+            "role": "user", 
+            "content": f"edit prompt: {prompt.text if prompt.text else None}, image attached: {prompt.files[0].name if prompt.files else None}"
+        })
         st.rerun()
     
     if st.session_state.last_prompt_img_edit and st.session_state.last_prompt_text_edit:
         last_prompt_text_edit = st.session_state.last_prompt_text_edit
         last_prompt_img_edit = st.session_state.last_prompt_img_edit
-        
-        with st.chat_message("user"):
-            st.markdown(f"{last_prompt_text_edit}, image attached: {last_prompt_img_edit.name}")
-        
-        # Add user message to session state
-        st.session_state.messages_edit.append({
-            "role": "user", 
-            "content": f"{last_prompt_text_edit}, image attached: {last_prompt_img_edit.name}"
-        })
         
         with st.chat_message("assistant"):
             with st.spinner("Sending prompt and image file to server..."):

@@ -75,14 +75,12 @@ def main():
     if prompt:
         st.session_state.chat_disabled_gen = True
         st.session_state.last_prompt_text_gen = prompt
+        st.session_state.messages_gen.append({"role": "user", "content": prompt})
         st.rerun()
 
 
     if st.session_state.last_prompt_text_gen:
         last_prompt_text_gen = st.session_state.last_prompt_text_gen
-        with st.chat_message("user"):
-            st.markdown(last_prompt_text_gen)
-        st.session_state.messages_gen.append({"role": "user", "content": last_prompt_text_gen})
         with st.chat_message("assistant"):
             with st.spinner("Sending prompt to server..."):
                 time.sleep(5) # uncomment if testing spinner or delay
