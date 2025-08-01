@@ -1,3 +1,6 @@
+# ignore large model files
+server_api/models
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
