@@ -83,7 +83,6 @@ def main():
         last_prompt_text_gen = st.session_state.last_prompt_text_gen
         with st.chat_message("assistant"):
             with st.spinner("Sending prompt to server..."):
-                time.sleep(5) # uncomment if testing spinner or delay
                 success, prompt_response = send_prompt(last_prompt_text_gen)
                 if success:
                     message = prompt_response.json().get("message")
@@ -95,7 +94,6 @@ def main():
                     st.session_state.last_prompt_text_gen = None
                     st.rerun()
             with st.spinner("Fetching image from server..."):
-                time.sleep(5) # uncomment if testing spinner or delay
                 success, img_response = fetch_image()
                 if success: 
                     img_name = generate_file_name()
