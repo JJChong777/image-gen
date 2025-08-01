@@ -23,8 +23,8 @@ last_input_image = None
 edit_pipe = None 
 
 # ignore all the slow HF models loading first for frontend testing
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     # global gen_pipe
     # try:
     #     print("Loading image generation model (stable-diffusion-3.5-medium)...")
@@ -40,39 +40,39 @@ edit_pipe = None
     # except Exception as e:
     #     print(f"Image generation model (stable-diffusion-3.5-medium) loading failed: {e}")
     
-    # global edit_pipe
-    # try:
-    #     print("Loading image editing model (FLUX.1-Kontext-dev)...")
-    #     edit_pipe = FluxKontextPipeline.from_pretrained(
-    #         "black-forest-labs/FLUX.1-Kontext-dev", 
-    #         torch_dtype=torch.bfloat16, 
-    #         token=hf_token
-    #     )
-    #     edit_pipe.to("cuda")
-    #     print(f"Edit pipe dtype: {edit_pipe.unet.dtype}")
-    #     print("Image editing model (FLUX.1-Kontext-dev) loaded successfully.")
-    # except Exception as e:
-    #     print(f"Image generation model (FLUX.1-Kontext-dev) loading failed: {e}")
+    global edit_pipe
+    try:
+        print("Loading image editing model (FLUX.1-Kontext-dev)...")
+        edit_pipe = FluxKontextPipeline.from_pretrained(
+            "black-forest-labs/FLUX.1-Kontext-dev", 
+            torch_dtype=torch.bfloat16, 
+            token=hf_token
+        )
+        edit_pipe.to("cuda")
+        print(f"Edit pipe dtype: {edit_pipe.unet.dtype}")
+        print("Image editing model (FLUX.1-Kontext-dev) loaded successfully.")
+    except Exception as e:
+        print(f"Image generation model (FLUX.1-Kontext-dev) loading failed: {e}")
 
-    # yield  # App is running
+    yield  # App is running
 
-    # # Cleanup here
-    # try:
-    #     # if 'gen_pipe' in globals() and gen_pipe:
-    #     #     del gen_pipe
-    #     if 'edit_pipe' in globals() and edit_pipe:
-    #         del edit_pipe
-    # except Exception as e:
-    #     print(f"Error during cleanup: {e}")
+    # Cleanup here
+    try:
+        # if 'gen_pipe' in globals() and gen_pipe:
+        #     del gen_pipe
+        if 'edit_pipe' in globals() and edit_pipe:
+            del edit_pipe
+    except Exception as e:
+        print(f"Error during cleanup: {e}")
 
-    # gc.collect()
+    gc.collect()
 
-    # torch.cuda.empty_cache()
-    # torch.cuda.ipc_collect()
-    # print("Memory fully cleared.")
+    torch.cuda.empty_cache()
+    torch.cuda.ipc_collect()
+    print("Memory fully cleared.")
 
 # app = FastAPI(lifespan=lifespan)
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 
 # Health Check 
@@ -217,9 +217,30 @@ def get_edit_image():
         raise HTTPException(status_code=400, detail="No prompt has been provided in the /input_image endpoint. Please try again")
     if not last_input_image:
         raise HTTPException(status_code=400, detail="No image has been provided in the /input_image endpoint. Please try again")
-    # Return a hardcoded image file
-    image_path = "generated_images/cat in a hat.png"  # Change as needed
-    return FileResponse(image_path, media_type="image/png", filename="robot_cat.png")
+    try:
+        image = edit_pipe(
+            image=last_input_image,
+            prompt=last_input,
+            guidance_scale=2.5
+        ).images[0]
+
+        # Sanitize the filename to prevent issues with invalid characters
+        sanitized_filename = "".join(c if c.isalnum() or c in (' ', '.', '_', '-') else '_' for c in last_input)
+        image_path = f"edited_images/{sanitized_filename}.png" # It's good practice to save to a specific directory
+
+        # Ensure the directory exists
+        os.makedirs("edited_images", exist_ok=True)
+
+        image.save(image_path)
+        last_input = ""
+        last_input_image = None
+        return FileResponse(image_path, media_type="image/png")
+    except Exception as e:
+        # Catch any errors during image generation (e.g., CUDA out of memory, model issues)
+        print(f"Error during image generation: {e}")
+        last_input = ""
+        last_input_image = None
+        raise HTTPException(status_code=500, detail=f"Error generating image: {e}")
 
 
 
