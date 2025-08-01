@@ -1,32 +1,194 @@
 import streamlit as st
-from modules import display_img_with_download, generate_file_name
+from modules import display_img_with_download, RequestType, make_safe_request, API_URL, generate_file_name
+import time
+from io import BytesIO
 
-def image_edit_with_prompt(image_file, prompt):
-    """Generate a edited image with the original image file and a prompt"""
-    # Simulated image edit with prompt
-    return "https://upload.wikimedia.org/wikipedia/commons/1/1a/YF-16_and_YF-17_in_flight.jpg"
-
+def send_edit_image_prompt(prompt: str, image_file):
+    input_url = f"{API_URL}/input_image"
     
-
-def main():
-    st.title("Edit an image with a prompt")
-    image_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
-    if image_file is not None:
-        st.image(image_file, caption="Preview", width=300)
-    # with st.form("image_edit_prompt_form"):
-    prompt = st.text_area("Enter a prompt", value="Enhance this image of an F-16 fighter jet soaring through a clear blue sky above rugged mountains. Emphasize the sense of speed and power by adding subtle motion blur to the jet's wings or exhaust, while keeping the mountains sharp. Adjust lighting to create dynamic shadows and highlights on the aircraft, making it pop against the background. Consider a slightly desaturated, cinematic color grade to enhance the dramatic atmosphere, perhaps with a subtle vignette to draw the eye.")
-        # submitted = st.form_submit_button("Edit Image")
-    submitted = st.button("Edit Image")
-
-    if submitted:
-        if image_file is not None and prompt:
-            image_url = image_edit_with_prompt(image_file, prompt)
-            name = generate_file_name()
-            st.success("Form submitted successfully!")
-            display_img_with_download(name, image_url)
-
+    # Debug: Check what type of object we're dealing with
+    print(f"Image file type: {type(image_file)}")
+    print(f"Image file name: {getattr(image_file, 'name', 'No name attribute')}")
+    
+    try:
+        # If it's a Streamlit UploadedFile, we need to handle it properly
+        if hasattr(image_file, 'read'):
+            # Reset file pointer to beginning
+            image_file.seek(0)
+            files = {
+                'image': (image_file.name, image_file, image_file.type)
+            }
         else:
-            st.warning("Please upload an image and enter a prompt.")
+            # If it's already bytes or another format
+            files = {
+                'image': ('uploaded_image.png', image_file, 'image/png')
+            }
+        
+        payload = {'user_input': prompt}
+        
+        # Use requests to send multipart form data
+        import requests
+        response = requests.post(input_url, data=payload, files=files)
+        
+        if response.status_code == 200:
+            return True, response
+        else:
+            print(f"Error response: {response.status_code} - {response.text}")
+            return False, f"HTTP {response.status_code}: {response.text}"
+            
+    except Exception as e:
+        print(f"Exception in send_edit_image_prompt: {str(e)}")
+        return False, f"Exception: {str(e)}"
+
+def fetch_edited_image():
+    image_url = f"{API_URL}/edit"
+    return make_safe_request(RequestType.GET, image_url)
+    
+def main():
+    st.title("Edit a image with AI")
+
+    if "messages_edit" not in st.session_state:
+        st.session_state.messages_edit = [{"role": "assistant", "content": "Hi, I'm the Image Generation Chatbot! Type in a prompt to get started", "ok":True, "img_name": None}]
+    if "image_cache_edit" not in st.session_state:
+        st.session_state.image_cache_edit = {}
+    if "chat_disabled_edit" not in st.session_state:
+        st.session_state.chat_disabled_edit = False
+    if "last_prompt_text_edit" not in st.session_state:
+        st.session_state.last_prompt_text_edit = False
+    if "last_prompt_img_edit" not in st.session_state:
+        st.session_state.last_prompt_img_edit = False
+
+    suggested_questions = [
+        "Add a hat to the cat",
+        "Add contrails behind the plane",
+        "Add birthday candles to the cake"
+    ]
+
+    with st.chat_message("assistant"):
+        st.markdown("Try asking:")
+        with st.form("suggested_question_form"):
+            selected_question = st.selectbox(
+                "What suggested question would you like to ask?",
+                suggested_questions,
+                index=None,
+                placeholder="Select suggested question...",
+            )
+            submitted = st.form_submit_button('Submit Question')
+            if submitted:
+                st.session_state.chat_input_edit = selected_question
+    
+    prompt = st.chat_input(placeholder="Type your image generation prompt here...",
+        accept_file=True,
+        file_type=["jpg", "jpeg", "png"],
+        disabled=st.session_state.chat_disabled_edit,
+        key='chat_input_edit'
+        )
+
+    for msg in st.session_state.messages_edit:
+        if msg["role"] == "user":
+            with st.chat_message("user"):
+                st.markdown(msg["content"])
+        elif msg["role"] == "assistant":
+                if not msg["ok"]:
+                    with st.chat_message("assistant"):
+                        st.error(msg["content"])
+                else:
+                    if msg["img_name"]:
+                        img_name = msg["img_name"]
+                        img_bytes = st.session_state.image_cache_edit.get(img_name)
+                        if img_bytes:
+                            with st.chat_message("assistant"):
+                                display_img_with_download(img_bytes, img_name)
+                        else:
+                            st.error(f"Image with name: {img_name} not found in image cache")
+                    if msg["content"]:
+                        with st.chat_message("assistant"):
+                            st.markdown(msg["content"])
+        else:
+            st.error("Message with invalid role") 
+
+    if prompt:
+        st.session_state.chat_disabled_edit = True
+        st.session_state.last_prompt_text_edit = prompt.text
+        if prompt.files:
+            st.session_state.last_prompt_img_edit = prompt.files[0]
+        st.rerun()
+    
+    if st.session_state.last_prompt_img_edit and st.session_state.last_prompt_text_edit:
+        last_prompt_text_edit = st.session_state.last_prompt_text_edit
+        last_prompt_img_edit = st.session_state.last_prompt_img_edit
+        
+        with st.chat_message("user"):
+            st.markdown(f"{last_prompt_text_edit}, image attached: {last_prompt_img_edit.name}")
+        
+        # Add user message to session state
+        st.session_state.messages_edit.append({
+            "role": "user", 
+            "content": f"{last_prompt_text_edit}, image attached: {last_prompt_img_edit.name}"
+        })
+        
+        with st.chat_message("assistant"):
+            with st.spinner("Sending prompt and image file to server..."):
+                success, prompt_response = send_edit_image_prompt(last_prompt_text_edit, last_prompt_img_edit)
+                
+                if success:
+                    message = prompt_response.json().get("message")
+                    st.success(message)
+                else:
+                    error_msg = f"Failed to send prompt and image: {prompt_response}"
+        
+                    st.session_state.messages_edit.append({"role": "assistant", "content": error_msg, "ok": False})
+                    st.session_state.chat_disabled_edit = False
+                    st.session_state.last_prompt_text_edit = None
+                    st.session_state.last_prompt_img_edit = None
+                    st.rerun()
+                    
+            with st.spinner("Fetching edited image from server..."):
+                success, img_response = fetch_edited_image()
+                if success: 
+                    # Check if response is actually an image
+                    content_type = img_response.headers.get('content-type', '')
+                    if not content_type.startswith('image/'):
+                        error_msg = f"Server returned non-image content: {content_type}"
+                        if hasattr(img_response, 'text'):
+                            error_msg += f" ,Response text: {img_response.text[:500]}"
+                        st.session_state.messages_edit.append({"role": "assistant", "content": error_msg, "ok": False})
+                        st.session_state.chat_disabled_edit = False
+                        st.session_state.last_prompt_text_edit = None
+                        st.session_state.last_prompt_img_edit = None
+                        st.rerun()
+                        
+                    img_name = generate_file_name()
+                    img_bytes = img_response.content
+                    st.session_state.image_cache_edit[img_name] = img_bytes
+                    st.session_state.messages_edit.append({"role": "assistant", "content": None, "ok": True, "img_name": img_name})
+                    st.session_state.chat_disabled_edit = False
+                    st.session_state.last_prompt_text_edit = None
+                    st.session_state.last_prompt_img_edit = None
+                    st.rerun()
+                else:
+                    error_msg = f"Failed to fetch edited image: {img_response}"
+                    st.session_state.messages_edit.append({"role": "assistant", "content": error_msg, "ok": False})
+                    st.session_state.chat_disabled_edit = False
+                    st.session_state.last_prompt_text_edit = None
+                    st.session_state.last_prompt_img_edit = None
+                    st.rerun()
+    
+    elif st.session_state.last_prompt_text_edit:
+        error_msg = f"Please attach a image to edit with AI"
+        st.session_state.messages_edit.append({"role": "assistant", "content": error_msg, "ok": False})
+        st.session_state.chat_disabled_edit = False
+        st.session_state.last_prompt_text_edit = None
+        st.session_state.last_prompt_img_edit = None
+        st.rerun()
+
+    elif st.session_state.last_prompt_img_edit:
+        error_msg = f"Please write a prompt to specify how image should be edited with AI"
+        st.session_state.messages_edit.append({"role": "assistant", "content": error_msg, "ok": False})
+        st.session_state.chat_disabled_edit = False
+        st.session_state.last_prompt_text_edit = None
+        st.session_state.last_prompt_img_edit = None
+        st.rerun()
 
 if __name__ == "__main__":
     main()
