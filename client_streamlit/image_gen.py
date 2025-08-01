@@ -1,6 +1,7 @@
 import streamlit as st
 from modules import display_img_with_download, RequestType, make_safe_request, API_URL, generate_file_name
 import time
+import requests
 from io import BytesIO
 
 def send_prompt(prompt: str):
@@ -35,8 +36,6 @@ def send_edit_image_prompt(prompt: str, image_file):
         
         payload = {'user_input': prompt}
         
-        # Use requests to send multipart form data
-        import requests
         response = requests.post(input_url, data=payload, files=files)
         
         if response.status_code == 200:
@@ -163,7 +162,7 @@ def main():
                     st.session_state.last_prompt_img = None
                     st.rerun()
                     
-            with st.spinner("Fetching edited image from server..."):
+            with st.spinner("Generating and fetching edited image from server..."):
                 success, img_response = fetch_edited_image()
                 if success: 
                     # Check if response is actually an image
@@ -216,7 +215,7 @@ def main():
                     st.session_state.last_prompt_text = None
                     st.session_state.last_prompt_img = None
                     st.rerun()
-            with st.spinner("Fetching image from server..."):
+            with st.spinner("Generating and fetching image from server..."):
                 time.sleep(5) # uncomment if testing spinner or delay
                 success, img_response = fetch_image()
                 if success: 
