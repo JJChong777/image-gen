@@ -13,16 +13,16 @@ Install conda manager
 - `cd server_api`
 
 Create venv with environment.yml
-- micromamba: `micromamba env create -f environment.yaml -n fastapi_app_env` OR
-- miniconda: `conda env create -f environment.yaml -n fastapi_app_env`
+- micromamba: `micromamba env create -f environment.yml -n fastapi_app_env` OR
+- miniconda: `conda env create -f environment.yml -n fastapi_app_env`
 
 Activate environment
 - micromamba: `micromamba activate fastapi_app_env` OR
 - miniconda: `conda activate fastapi_app_env`
 
 Update environment (not sure, just try)
-- micromamba: `micromamba env update -f environment.yaml` OR
-- miniconda: `conda env update -f environment.yaml`
+- micromamba: `micromamba env update -f environment.yml` OR
+- miniconda: `conda env update -f environment.yml`
 
 Activate the server
 - `uvicorn main:app --host 0.0.0.0 --port 8000`
